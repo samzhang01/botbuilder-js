@@ -7,5 +7,5 @@
  * Licensed under the MIT License.
  */
 export * from './memoryInterface';
-export * from './composedMemory';
+export * from './stackMemory';
 export * from './simpleObjectMemory';

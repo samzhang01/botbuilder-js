@@ -27,8 +27,19 @@ export class ErrorListener implements ANTLRErrorListener<any> {
 }
 
 // tslint:disable-next-line: completed-docs
+/**
+ * Convert PCRE regex string to RegExp object.
+ * PCRE ref: http://www.pcre.org/.
+ * PCRE antlr g4 file: CommonRegex.g4.
+ */
 export class CommonRegex {
     public static regexCache: LRUCache<string, RegExp> = new LRUCache<string, RegExp>(15);
+
+    /**
+     * Create RegExp object from PCRE pattern string.
+     * @param pattern PCRE pattern string.
+     * @returns RegExp object.
+     */
     public static CreateRegex(pattern: string): RegExp {
 
         let result: RegExp;
