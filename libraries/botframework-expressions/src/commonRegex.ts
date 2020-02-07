@@ -5,26 +5,11 @@
  * Copyright (c) Microsoft Corporation. All rights reserved.
  * Licensed under the MIT License.
  */
-import { ANTLRErrorListener, ANTLRInputStream, CommonTokenStream, RecognitionException, Recognizer } from 'antlr4ts';
+import { ANTLRInputStream, CommonTokenStream } from 'antlr4ts';
 import { ParseTree } from 'antlr4ts/tree/ParseTree';
 import * as LRUCache from 'lru-cache';
 import { CommonRegexLexer, CommonRegexParser } from './generated';
-
-// tslint:disable-next-line: completed-docs
-export class ErrorListener implements ANTLRErrorListener<any> {
-    public static readonly Instance: ErrorListener = new ErrorListener();
-
-    public syntaxError<T>(
-        _recognizer: Recognizer<T, any>,// eslint-disable-line @typescript-eslint/no-unused-vars
-        _offendingSymbol: T,// eslint-disable-line @typescript-eslint/no-unused-vars
-        line: number,// eslint-disable-line @typescript-eslint/no-unused-vars
-        charPositionInLine: number,// eslint-disable-line @typescript-eslint/no-unused-vars
-        msg: string,// eslint-disable-line @typescript-eslint/no-unused-vars
-        _e: RecognitionException | undefined): void {// eslint-disable-line @typescript-eslint/no-unused-vars
-        
-        throw Error(`Regular expression is invalid.`);
-    }
-}
+import { RegexErrorListener } from './regexErrorListener';
 
 // tslint:disable-next-line: completed-docs
 /**
@@ -94,7 +79,7 @@ export class CommonRegex {
         const parser: CommonRegexParser = new CommonRegexParser(tokenStream);
         parser.removeErrorListeners();
         // tslint:disable-next-line: no-use-before-declare
-        parser.addErrorListener(ErrorListener.Instance);
+        parser.addErrorListener(RegexErrorListener.Instance);
         parser.buildParseTree = true;
 
         return parser.parse();

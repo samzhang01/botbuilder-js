@@ -17,3 +17,4 @@ export * from './generated';
 export * from './commonRegex';
 export * from './parser';
 export * from './memory';
+export * from './regexErrorListener';

@@ -117,6 +117,20 @@ export class ExpressionEngine implements ExpressionParserInterface {
             }
         }
 
+        public visitConstantAtom(context: ep.ConstantAtomContext): Expression {
+            const text: string = context.text;
+            if (text.match(/\[ *\]/g)) {
+                return new Constant([]);
+            }
+
+            if (text.match(/\{ *\}/g)) {
+                return new Constant({});
+            }
+
+            throw new Error(`Unrecognized constant: ${ text }`);
+            
+        }
+ 
         protected defaultResult = (): Expression => new Constant('');
 
         private readonly MakeExpression = (type: string, ...children: Expression[]): Expression =>

@@ -19,27 +19,17 @@ export class Extensions {
      * Return all static paths to memory.  If there is a computed element index, then the path is terminated there,
      * but you might get other paths from the computed part as well.
      * @param expression Expression to get references from.
-     * @returns Hash set of the static reference paths.
+     * @returns List of the static reference paths.
      */
     public static references(expression: Expression): string[] {
-        let references: Set<string> = new Set<string>();
-        const path: string = this.referenceWalk(expression, references);
+        let path: string;
+        let references: Set<string>;
+        ({path, references} = this.referenceWalk(expression));
         if (path !== undefined) {
             references = references.add(path);
         }
 
-        const filteredReferences: Set<string> = new Set<string>();
-        references.forEach((x: string): void => {
-            if (!x.startsWith('$local.')) {
-                if (x.startsWith('$global.')) {
-                    filteredReferences.add(x.substr(8));
-                } else {
-                    filteredReferences.add(x);
-                }
-            }
-        });
-
-        return Array.from(filteredReferences);
+        return Array.from(references);
     }
 
     /**
@@ -63,13 +53,12 @@ export class Extensions {
     /**
      * Walking function for identifying static memory references in an expression.
      * @param expression Expression to analyze.
-     * @param references Tracking for references found.
      * @param extension If present, called to override lookup for things like template expansion.
-     * @returns Accessor path of expression.
+     * @returns Accessor path of expression which is a potential partial path and the full path found so far.
      */
-    public static referenceWalk(expression: Expression, references: Set<string>,
-        extension?: (arg0: Expression) => boolean): string {
+    public static referenceWalk(expression: Expression, extension?: (arg0: Expression) => boolean): {path: string; references: Set<string> } {
         let path: string;
+        let references: Set<string>;
         if (extension === undefined || !extension(expression)) {
             const children: Expression[] = expression.children;
             if (expression.type === ExpressionType.Accessor) {
@@ -80,7 +69,7 @@ export class Extensions {
                 }
 
                 if (children.length === 2) {
-                    path = Extensions.referenceWalk(children[1], references, extension);
+                    ({path, references} = Extensions.referenceWalk(children[1], extension));
                     if (path !== undefined) {
                         path = path.concat('.', prop);
                     }
@@ -88,7 +77,7 @@ export class Extensions {
                     // because for example, first(items).x should not return x as refs
                 }
             } else if (expression.type === ExpressionType.Element) {
-                path = Extensions.referenceWalk(children[0], references, extension);
+                ({path, references} = Extensions.referenceWalk(children[0], extension));
                 if (path !== undefined) {
                     if (children[1] instanceof Constant) {
                         const cnst: Constant = children[1] as Constant;
@@ -101,7 +90,11 @@ export class Extensions {
                         references.add(path);
                     }
                 }
-                const idxPath: string = Extensions.referenceWalk(children[1], references, extension);
+                let idxPath: string;
+                let refs1: Set<string>;
+                ({path: idxPath, references: refs1} = Extensions.referenceWalk(children[1], extension));
+                refs1.forEach(u => references.add(u));
+
                 if (idxPath !== undefined) {
                     references.add(idxPath);
                 }
